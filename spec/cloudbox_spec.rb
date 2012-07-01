@@ -18,14 +18,10 @@ describe Cloudbox::Manager do
   end
 
   def mock_vms_list_output
-    output = double("output")
-    output.stub(:stdout => "box1 {uuid1-uuid1}\n box2 {uuid2-uuid2}")
-    output
+    "box1 {uuid1-uuid1}\n box2 {uuid2-uuid2}"
   end
 
   def mock_running_vms_list_output
-    output = double("output")
-    output.stub(:stdout => "box1 {uuid1-uuid1}")
-    output
+    "box1 {uuid1-uuid1}"
   end
 end

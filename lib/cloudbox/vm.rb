@@ -37,5 +37,9 @@ module Cloudbox
       Cloudbox::Manager.execute(*commands)
     end
 
+    def ip_address
+      output = execute("VBoxManage", "guestproperty", "get", self.uuid, "/VirtualBox/GuestInfo/Net/0/V4/IP")
+      output.match(/\d+.\d+.\d+.\d+/).to_s
+    end
   end
 end
