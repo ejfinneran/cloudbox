@@ -1,4 +1,5 @@
 require "cloudbox/version"
+require "mixlib/shellout"
 
 module Cloudbox
   autoload :VM, "cloudbox/vm"

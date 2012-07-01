@@ -1,5 +1,8 @@
 module Cloudbox
   class VM
+
+    attr_reader :uuid
+
     def initialize(uuid)
       @uuid = uuid
     end
@@ -19,7 +22,7 @@ module Cloudbox
     end
 
     def start(type = "headless")
-      execute("VBoxManage", "controlvm", @uuid, "startvm")
+      execute("VBoxManage", "startvm", @uuid, "--type", type)
     end
 
     def halt
@@ -28,6 +31,10 @@ module Cloudbox
 
     def running?
       Cloudbox.running_vms.include?(self)
+    end
+
+    def execute(*commands)
+      Cloudbox::Manager.execute(*commands)
     end
 
   end
