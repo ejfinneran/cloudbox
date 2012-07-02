@@ -13,8 +13,8 @@ end
 
 RSpec.configure do |config|
   config.before(:each) do
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "list", "vms").any_number_of_times.and_return(mock_vms_list_output)
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "list", "runningvms").any_number_of_times.and_return(mock_running_vms_list_output)
+    Cloudbox::Manager.stub(:execute).with("VBoxManage", "list", "vms").and_return(mock_vms_list_output)
+    Cloudbox::Manager.stub(:execute).with("VBoxManage", "list", "runningvms").and_return(mock_running_vms_list_output)
   end
 end
 

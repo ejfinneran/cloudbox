@@ -17,19 +17,19 @@ describe Cloudbox::VM do
   it "can start a VM in headless mode" do
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "startvm", "uuid1", "--type", "headless").exactly(1).times
     vm = Cloudbox::VM.new("uuid1")
-    vm.start
+    vm.start!
   end
 
   it "can start a VM in headless mode" do
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "startvm", "uuid1", "--type", "gui").exactly(1).times
     vm = Cloudbox::VM.new("uuid1")
-    vm.start("gui")
+    vm.start!("gui")
   end
 
   it "can halt a VM" do
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "controlvm", "uuid1", "poweroff")
     vm = Cloudbox::VM.new("uuid1")
-    vm.halt
+    vm.halt!
   end
 
   it "can receive the VMs IP address" do
@@ -74,4 +74,14 @@ describe Cloudbox::VM do
     end
   end
 
+  it "supports cloning from a given UUID" do
+    return_value1 = [Cloudbox::VM.new("uuid1")]
+    return_value2 = return_value1 + [Cloudbox::VM.new("newuid1")]
+    Cloudbox::Manager.stub(:vms).exactly(2).times.
+      and_return(return_value1, return_value2)
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", "uuid1", "--register")
+    vm = Cloudbox::VM.clone_from("uuid1")
+    vm.class.should eq(Cloudbox::VM)
+    vm.uuid.should eq("newuid1")
+  end
 end

@@ -8,6 +8,14 @@ module Cloudbox
     end
 
     class << self
+
+      def clone_from(uuid)
+        old_vms = Cloudbox::Manager.vms
+        output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register")
+        new_vm = (Cloudbox::Manager.vms - old_vms).first
+        new_vm
+      end
+
       def from_list(list)
         unless list === Array
           list = list.split("\n")
@@ -19,6 +27,7 @@ module Cloudbox
         end
         vms
       end
+
     end
 
     def ==(vm)
@@ -35,25 +44,35 @@ module Cloudbox
       self.uuid.hash
     end
 
-    def start(type = "headless")
+    def running?
+      Cloudbox::Manager.running_vms.include?(self)
+    end
+
+    def ip_address
+      # TODO - check timestamp and return nil if it's too old
+      output = execute("VBoxManage", "guestproperty", "get", self.uuid, "/VirtualBox/GuestInfo/Net/0/V4/IP")
+      output.match(/\d+.\d+.\d+.\d+/).to_s
+    end
+
+    def start!(type = "headless")
       execute("VBoxManage", "startvm", @uuid, "--type", type)
     end
 
-    def halt
+    def halt!
       execute("VBoxManage", "controlvm", @uuid, "poweroff")
     end
 
-    def running?
-      Cloudbox::Manager.running_vms.include?(self)
+    def clone!
+      self.class.clone_from(self.uuid)
+    end
+
+    def destroy!
+      execute("vboxmanage", "unregistervm", @uuid, "--delete")
     end
 
     def execute(*commands)
       Cloudbox::Manager.execute(*commands)
     end
 
-    def ip_address
-      output = execute("VBoxManage", "guestproperty", "get", self.uuid, "/VirtualBox/GuestInfo/Net/0/V4/IP")
-      output.match(/\d+.\d+.\d+.\d+/).to_s
-    end
   end
 end
