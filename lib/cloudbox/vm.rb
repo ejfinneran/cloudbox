@@ -21,6 +21,10 @@ module Cloudbox
       end
     end
 
+    def ==(vm)
+      return self.uuid == vm.uuid
+    end
+
     def start(type = "headless")
       execute("VBoxManage", "startvm", @uuid, "--type", type)
     end

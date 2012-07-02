@@ -37,4 +37,13 @@ describe Cloudbox::VM do
     vm.ip_address.should eq("10.0.2.15")
   end
 
+  it "supports checking equality based on uuid" do
+    vm1 = Cloudbox::VM.new("uuid1")
+    vm2 = Cloudbox::VM.new("uuid2")
+    vm3 = Cloudbox::VM.new("uuid1")
+    vm1.should_not eq(vm2)
+    vm1.should eq(vm1)
+    vm1.should eq(vm3)
+  end
+
 end
