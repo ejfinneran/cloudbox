@@ -10,3 +10,20 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 end
+
+RSpec.configure do |config|
+  config.before(:each) do
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "list", "vms").any_number_of_times.and_return(mock_vms_list_output)
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "list", "runningvms").any_number_of_times.and_return(mock_running_vms_list_output)
+  end
+end
+
+module VMHelpers
+  def mock_vms_list_output
+    "box1 {uuid1-uuid1}\n box2 {uuid2-uuid2}"
+  end
+
+  def mock_running_vms_list_output
+    "box1 {uuid1-uuid1}"
+  end
+end

@@ -25,6 +25,16 @@ module Cloudbox
       return self.uuid == vm.uuid
     end
 
+    alias_method :eql?, :==
+
+    def <=>(vm)
+      return self.uuid <=> vm.uuid
+    end
+
+    def hash
+      self.uuid.hash
+    end
+
     def start(type = "headless")
       execute("VBoxManage", "startvm", @uuid, "--type", type)
     end
@@ -34,7 +44,7 @@ module Cloudbox
     end
 
     def running?
-      Cloudbox.running_vms.include?(self)
+      Cloudbox::Manager.running_vms.include?(self)
     end
 
     def execute(*commands)

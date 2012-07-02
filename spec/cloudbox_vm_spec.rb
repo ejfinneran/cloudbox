@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe Cloudbox::VM do
+  include VMHelpers
   it "must be initialized with a uuid" do
     lambda { Cloudbox::VM.new }.should raise_error
     lambda { Cloudbox::VM.new("UUID") }.should_not raise_error
@@ -44,6 +45,33 @@ describe Cloudbox::VM do
     vm1.should_not eq(vm2)
     vm1.should eq(vm1)
     vm1.should eq(vm3)
+  end
+
+  it "returns the same hash code for equivalant VMs" do
+    vm1 = Cloudbox::VM.new("uuid1")
+    vm2 = Cloudbox::VM.new("uuid1")
+    vm3 = Cloudbox::VM.new("uuid2")
+    vm1.hash.should eq(vm2.hash)
+    vm1.hash.should_not eq(vm3.hash)
+  end
+
+  it "supports standard array math" do
+    vms = Cloudbox::Manager.vms
+    running_vms = Cloudbox::Manager.running_vms
+    (vms - running_vms).should eq([Cloudbox::VM.new("uuid2-uuid2")])
+
+  end
+
+  it "supports checking if a VM is running" do
+    vms = Cloudbox::Manager.vms
+    running_vms = Cloudbox::Manager.running_vms
+    running_vms.each do |vm|
+      vm.running?.should be true
+    end
+    not_running_vms = (vms - running_vms)
+    not_running_vms.each do |vm|
+      vm.running?.should_not be true
+    end
   end
 
 end
