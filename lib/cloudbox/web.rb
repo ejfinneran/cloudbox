@@ -16,7 +16,7 @@ module Cloudbox
 
     def vm_json(vms)
       Jbuilder.encode do |json|
-        json.vms vms, :uuid, :name, :ostype, :memory, :ip_address, :running?
+        json.vms vms, :uuid, :name, :ostype, :memory, :ip_address, :macaddress1, :running?
       end
     end
 

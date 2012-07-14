@@ -52,16 +52,12 @@ module Cloudbox
       Cloudbox::Manager.running_vms.include?(self)
     end
 
-    def name
-      vm_hash["name"]
-    end
-
-    def ostype
-      vm_hash["ostype"]
-    end
-
-    def memory
-      vm_hash["memory"]
+    def method_missing(method, *args)
+      if vm_hash[method.to_s]
+        return vm_hash[method.to_s]
+      else
+        super
+      end
     end
 
     def ip_address
