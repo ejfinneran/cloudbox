@@ -87,4 +87,11 @@ describe Cloudbox::VM do
     vm.class.should eq(Cloudbox::VM)
     vm.uuid.should eq("newuid1")
   end
+
+  it "returns information about the VM" do
+    vm = Cloudbox::VM.new("uuid1-uuid1")
+    vm.name.should eq("lucid32")
+    vm.ostype.should eq("Ubuntu")
+    vm.memory.should eq(512)
+  end
 end

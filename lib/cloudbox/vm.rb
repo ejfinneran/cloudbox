@@ -52,6 +52,18 @@ module Cloudbox
       Cloudbox::Manager.running_vms.include?(self)
     end
 
+    def name
+      vm_hash["name"]
+    end
+
+    def ostype
+      vm_hash["ostype"]
+    end
+
+    def memory
+      vm_hash["memory"]
+    end
+
     def ip_address
       return "" unless self.running?
       output = execute("VBoxManage", "guestproperty", "get", self.uuid, "/VirtualBox/GuestInfo/Net/0/V4/IP")
@@ -74,8 +86,21 @@ module Cloudbox
       execute("vboxmanage", "unregistervm", @uuid, "--delete")
     end
 
+    private
+
     def execute(*commands)
       Cloudbox::Manager.execute(*commands)
+    end
+
+    def vm_hash
+      return @vm_hash if @vm_hash
+      @vm_hash = {}
+      output = execute("VBoxManage", "showvminfo", @uuid, "--machinereadable")
+      output.gsub("\"", "").split("\n").each do |attribute|
+        key, value = attribute.split("=")
+        @vm_hash[key] = value
+      end
+      @vm_hash
     end
 
   end

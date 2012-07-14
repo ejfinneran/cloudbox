@@ -14,6 +14,12 @@ module Cloudbox
       @@uuid_generator ||= UUID.new
     end
 
+    def vm_json(vms)
+      Jbuilder.encode do |json|
+        json.vms vms, :uuid, :name, :ostype, :memory, :ip_address, :running?
+      end
+    end
+
     before do
       if params[:uuid]
         uuid = params[:uuid]
@@ -26,16 +32,12 @@ module Cloudbox
 
     get "/vms" do
       vms = Cloudbox::Manager.vms
-      Jbuilder.encode do |json|
-        json.vms vms, :uuid, :ip_address, :running?
-      end
+      vm_json(vms)
     end
 
     get "/running_vms" do
       vms = Cloudbox::Manager.running_vms
-      Jbuilder.encode do |json|
-        json.vms vms, :uuid, :ip_address, :running?
-      end
+      vm_json(vms)
     end
 
     post "/start" do
