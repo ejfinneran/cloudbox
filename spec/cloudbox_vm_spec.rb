@@ -32,9 +32,12 @@ describe Cloudbox::VM do
     vm.halt!
   end
 
-  it "can receive the VMs IP address" do
+  it "can receive the VMs IP address if the VM is running" do
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "guestproperty", "get", "uuid1", "/VirtualBox/GuestInfo/Net/0/V4/IP").and_return("Value: 10.0.2.15")
     vm = Cloudbox::VM.new("uuid1")
+    vm.ip_address.should eq("")
+
+    vm.stub(:running?).and_return(true)
     vm.ip_address.should eq("10.0.2.15")
   end
 

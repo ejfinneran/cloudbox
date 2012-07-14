@@ -53,7 +53,7 @@ module Cloudbox
     end
 
     def ip_address
-      # TODO - check timestamp and return nil if it's too old
+      return "" unless self.running?
       output = execute("VBoxManage", "guestproperty", "get", self.uuid, "/VirtualBox/GuestInfo/Net/0/V4/IP")
       output.match(/\d+.\d+.\d+.\d+/).to_s
     end

@@ -18,7 +18,7 @@ module Cloudbox
       if params[:uuid]
         uuid = params[:uuid]
         @vm = Cloudbox::VM.new(uuid)
-        unless @vm.exists?
+        unless @vm && @vm.exists?
           halt 404, Jbuilder.encode {|json| json.error "VM does not exist"}
         end
       end
@@ -54,21 +54,22 @@ module Cloudbox
 
     post "/clone" do
       uuid = params[:uuid]
-      thread_id = Cloudbox::Web.uuid_generator.generate(:compact)
-      Cloudbox::Web.workers[thread_id] = Thread.new do
+      job_id = Cloudbox::Web.uuid_generator.generate(:compact)
+      Cloudbox::Web.workers[job_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid)
         if vm.exists?
           vm.uuid
         end
       end
       Jbuilder.encode do |json|
-        json.job_id thread_id
+        json.job_id job_id
       end
     end
 
-    get "/status/:thread_id" do
-      thread = Cloudbox::Web.workers[params[:thread_id]]
-      status = if thread.alive?
+    get "/status/:job_id" do
+      thread = Cloudbox::Web.workers[params[:job_id]]
+      status = "Job not found" unless thread
+      status ||= if thread.alive?
         "Running"
       else
         if thread.value.nil?
