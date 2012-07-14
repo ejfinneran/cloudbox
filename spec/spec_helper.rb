@@ -15,8 +15,8 @@ end
 
 RSpec.configure do |config|
   config.before(:each) do
-    Cloudbox::Manager.stub(:execute).with("VBoxManage", "list", "vms").and_return(mock_vms_list_output)
-    Cloudbox::Manager.stub(:execute).with("VBoxManage", "list", "runningvms").and_return(mock_running_vms_list_output)
+    Cloudbox::Manager.stub(:vms).and_return(Cloudbox::VM.from_list(mock_vms_list_output))
+    Cloudbox::Manager.stub(:running_vms).and_return(Cloudbox::VM.from_list(mock_running_vms_list_output))
   end
 end
 
