@@ -7,10 +7,21 @@
 require 'cloudbox'
 require 'simplecov'
 SimpleCov.start
+
+require 'sinatra'
+require 'rack/test'
+
+set :run, false
+
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
+  config.include Rack::Test::Methods
+end
+
+def app
+  Cloudbox::Web
 end
 
 RSpec.configure do |config|
