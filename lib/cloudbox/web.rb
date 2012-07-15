@@ -21,10 +21,14 @@ module Cloudbox
     end
 
     at_exit do
-      # The VBoxManage command will also receive the SIGINT and cancel any active clones.
-      puts "Allowing workers to halt and cleanup..."
-      Cloudbox::Web.workers.values.compact.each(&:join)
-      puts "Done!"
+      workers = Cloudbox::Web.workers.values.compact
+      if workers.detect(&:alive?)
+        # The VBoxManage command will also receive the SIGINT and cancel any active clones.
+        # We just need to wait for it to finish
+        puts "Allowing workers to halt and cleanup..."
+        workers.each(&:join)
+        puts "Done!"
+      end
     end
 
     before do
@@ -65,14 +69,11 @@ module Cloudbox
       uuid = params[:uuid]
       job_id = Cloudbox::Web.uuid_generator.generate(:compact)
       Cloudbox::Web.workers[job_id] = Thread.new do
-        begin
-          vm = Cloudbox::VM.clone_from(uuid)
-          if vm.exists?
-            vm.start!
-            vm.uuid
-          end
-        rescue Mixlib::ShellOut::ShellCommandFailed
-          $!.message
+        vm = Cloudbox::VM.clone_from(uuid, true)
+        if vm && vm.exists?
+          vm.uuid
+        else
+          "Clone process was cancelled"
         end
       end
       Jbuilder.encode do |json|
@@ -84,13 +85,11 @@ module Cloudbox
       uuid = params[:uuid]
       job_id = Cloudbox::Web.uuid_generator.generate(:compact)
       Cloudbox::Web.workers[job_id] = Thread.new do
-        begin
-          vm = Cloudbox::VM.clone_from(uuid)
-          if vm.exists?
-            vm.uuid
-          end
-        rescue Mixlib::ShellOut::ShellCommandFailed
-          $!.message
+        vm = Cloudbox::VM.clone_from(uuid)
+        if vm && vm.exists?
+          vm.uuid
+        else
+          "Clone process was cancelled"
         end
       end
       Jbuilder.encode do |json|

@@ -11,12 +11,20 @@ module Cloudbox
 
       def clone_from(uuid, boot = false)
         old_vms = Cloudbox::Manager.vms
-        output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register")
-        if output.include?("VERR_CANCELLED")
-          raise CloneInterrupted, "Clone process was interupted by the user"
+        begin
+          output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register")
+          new_vm = (Cloudbox::Manager.vms - old_vms).first
+          new_vm.start! if boot
+          new_vm
+        rescue Mixlib::ShellOut::ShellCommandFailed
+          # if we see that the Clone job was cancelled, just return false and
+          # move along. If not, something else went wrong and we should re-raise
+          if $!.message.include?("VERR_CANCELLED")
+            false
+          else
+            raise $!
+          end
         end
-        new_vm = (Cloudbox::Manager.vms - old_vms).first
-        new_vm
       end
 
       def from_list(list)
