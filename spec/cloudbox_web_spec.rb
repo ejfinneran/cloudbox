@@ -63,7 +63,7 @@ describe "Sinatra App" do
   it "can check the status of a running clone job" do
     obj = double("worker")
     obj.stub(:alive?).and_return(true)
-    Cloudbox::Web.stub(:workers).and_return({"job123" => obj})
+    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
     get "/status/job123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("Running")
@@ -74,7 +74,7 @@ describe "Sinatra App" do
     obj = double("worker")
     obj.stub(:alive?).and_return(false)
     obj.stub(:value).and_return(nil)
-    Cloudbox::Web.stub(:workers).and_return({"job123" => obj})
+    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
     get "/status/job123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("Something went wrong")
@@ -85,7 +85,7 @@ describe "Sinatra App" do
     obj = double("worker")
     obj.stub(:alive?).and_return(false)
     obj.stub(:value).and_return("new-uuid1")
-    Cloudbox::Web.stub(:workers).and_return({"job123" => obj})
+    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
     get "/status/job123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("VM Ready")

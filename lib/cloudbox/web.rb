@@ -1,18 +1,8 @@
 require 'sinatra'
 require 'jbuilder'
-require 'uuid'
-require 'logger'
 
 module Cloudbox
   class Web < Sinatra::Base
-
-    def self.workers
-      @@workers ||= {}
-    end
-
-    def self.uuid_generator
-      @@uuid_generator ||= UUID.new
-    end
 
     def vm_json(vms)
       Jbuilder.encode do |json|
@@ -21,14 +11,7 @@ module Cloudbox
     end
 
     at_exit do
-      workers = Cloudbox::Web.workers.values.compact
-      if workers.detect(&:alive?)
-        # The VBoxManage command will also receive the SIGINT and cancel any active clones.
-        # We just need to wait for it to finish
-        puts "Allowing workers to halt and cleanup..."
-        workers.each(&:join)
-        puts "Done!"
-      end
+      Cloudbox::Manager.cleanup
     end
 
     before do
@@ -67,8 +50,8 @@ module Cloudbox
 
     post "/clone_and_boot" do
       uuid = params[:uuid]
-      job_id = Cloudbox::Web.uuid_generator.generate(:compact)
-      Cloudbox::Web.workers[job_id] = Thread.new do
+      job_id = Cloudbox::Manager.uuid_generator.generate(:compact)
+      Cloudbox::Manager.workers[job_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, true)
         if vm && vm.exists?
           vm.uuid
@@ -83,8 +66,8 @@ module Cloudbox
 
     post "/clone" do
       uuid = params[:uuid]
-      job_id = Cloudbox::Web.uuid_generator.generate(:compact)
-      Cloudbox::Web.workers[job_id] = Thread.new do
+      job_id = Cloudbox::Manager.uuid_generator.generate(:compact)
+      Cloudbox::Manager.workers[job_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid)
         if vm && vm.exists?
           vm.uuid
@@ -98,7 +81,7 @@ module Cloudbox
     end
 
     get "/status/:job_id" do
-      thread = Cloudbox::Web.workers[params[:job_id]]
+      thread = Cloudbox::Manager.workers[params[:job_id]]
       status = "Job not found" unless thread
       status ||= if thread.alive?
         "Running"
