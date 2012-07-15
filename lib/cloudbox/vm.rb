@@ -1,8 +1,6 @@
 module Cloudbox
   class VM
 
-    attr_reader :uuid
-
     def initialize(uuid)
       @uuid = uuid
     end
@@ -105,7 +103,7 @@ module Cloudbox
       output = execute("VBoxManage", "showvminfo", @uuid, "--machinereadable")
       output.gsub("\"", "").split("\n").each do |attribute|
         key, value = attribute.split("=")
-        @vm_hash[key] = value
+        @vm_hash[key.downcase] = value
       end
       @vm_hash
     end
