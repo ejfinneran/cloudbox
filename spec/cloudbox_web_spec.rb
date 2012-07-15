@@ -51,6 +51,9 @@ describe "Sinatra App" do
   it "can clone a VM asyncronously" do
     Cloudbox::VM.any_instance.should_receive(:exists?).and_return(true)
     Cloudbox::VM.stub(:clone_from).with("uuid1-uuid1").and_return(true)
+    # Since a new thread loses all the Rspec mocks we've set up,
+    # I'm stubbing out the thread here
+    Thread.stub(:new).and_return(Thread.new)
     post "/clone", :uuid => "uuid1-uuid1"
     json = JSON.parse(last_response.body)
     job_id = json["job_id"]
@@ -86,6 +89,6 @@ describe "Sinatra App" do
     get "/status/job123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("VM Ready")
-    json["uuid"].should eq("new-uuid1")
+    json["vm"]["uuid"].should eq("new-uuid1")
   end
 end

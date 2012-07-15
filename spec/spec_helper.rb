@@ -35,6 +35,8 @@ RSpec.configure do |config|
        "UUID" => "uuid1-uuid1",
        "macaddress1" => "08002726EC2D"}
     )
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "guestproperty", "get", kind_of(String), "/VirtualBox/GuestInfo/Net/0/V4/IP").any_number_of_times.and_return("Value: 10.0.2.15")
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", kind_of(String), "--register").any_number_of_times.and_return("")
   end
 end
 

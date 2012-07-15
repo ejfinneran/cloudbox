@@ -33,7 +33,6 @@ describe Cloudbox::VM do
   end
 
   it "can receive the VMs IP address if the VM is running" do
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "guestproperty", "get", "uuid1", "/VirtualBox/GuestInfo/Net/0/V4/IP").and_return("Value: 10.0.2.15")
     vm = Cloudbox::VM.new("uuid1")
     vm.ip_address.should eq("")
 
@@ -82,7 +81,6 @@ describe Cloudbox::VM do
     return_value2 = return_value1 + [Cloudbox::VM.new("newuid1")]
     Cloudbox::Manager.stub(:vms).exactly(2).times.
       and_return(return_value1, return_value2)
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", "uuid1", "--register")
     vm = Cloudbox::VM.clone_from("uuid1")
     vm.class.should eq(Cloudbox::VM)
     vm.uuid.should eq("newuid1")

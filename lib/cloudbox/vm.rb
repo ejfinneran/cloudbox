@@ -9,9 +9,12 @@ module Cloudbox
 
     class << self
 
-      def clone_from(uuid)
+      def clone_from(uuid, boot = false)
         old_vms = Cloudbox::Manager.vms
         output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register")
+        if output.include?("VERR_CANCELLED")
+          raise CloneInterrupted, "Clone process was interupted by the user"
+        end
         new_vm = (Cloudbox::Manager.vms - old_vms).first
         new_vm
       end

@@ -13,6 +13,7 @@ module Cloudbox
     def self.execute(*commands)
       command = Mixlib::ShellOut.new(*commands)
       command.run_command
+      command.error!
       command.stdout
     end
   end

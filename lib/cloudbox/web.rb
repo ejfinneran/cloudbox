@@ -20,6 +20,13 @@ module Cloudbox
       end
     end
 
+    at_exit do
+      # The VBoxManage command will also receive the SIGINT and cancel any active clones.
+      puts "Allowing workers to halt and cleanup..."
+      Cloudbox::Web.workers.values.compact.each(&:join)
+      puts "Done!"
+    end
+
     before do
       if params[:uuid]
         uuid = params[:uuid]
@@ -54,13 +61,36 @@ module Cloudbox
       end
     end
 
+    post "/clone_and_boot" do
+      uuid = params[:uuid]
+      job_id = Cloudbox::Web.uuid_generator.generate(:compact)
+      Cloudbox::Web.workers[job_id] = Thread.new do
+        begin
+          vm = Cloudbox::VM.clone_from(uuid)
+          if vm.exists?
+            vm.start!
+            vm.uuid
+          end
+        rescue Mixlib::ShellOut::ShellCommandFailed
+          $!.message
+        end
+      end
+      Jbuilder.encode do |json|
+        json.job_id job_id
+      end
+    end
+
     post "/clone" do
       uuid = params[:uuid]
       job_id = Cloudbox::Web.uuid_generator.generate(:compact)
       Cloudbox::Web.workers[job_id] = Thread.new do
-        vm = Cloudbox::VM.clone_from(uuid)
-        if vm.exists?
-          vm.uuid
+        begin
+          vm = Cloudbox::VM.clone_from(uuid)
+          if vm.exists?
+            vm.uuid
+          end
+        rescue Mixlib::ShellOut::ShellCommandFailed
+          $!.message
         end
       end
       Jbuilder.encode do |json|
@@ -77,13 +107,13 @@ module Cloudbox
         if thread.value.nil?
           "Something went wrong"
         else
-          @uuid = thread.value
+          @vm = Cloudbox::VM.new(thread.value)
           "VM Ready"
         end
       end
       Jbuilder.encode do |json|
         json.status status
-        json.uuid @uuid if @uuid
+        json.vm @vm, :uuid, :name, :ostype, :memory, :ip_address, :macaddress1, :running? if @vm
       end
     end
 
