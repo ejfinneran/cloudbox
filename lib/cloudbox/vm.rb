@@ -3,6 +3,7 @@ module Cloudbox
 
     def initialize(uuid)
       @uuid = uuid
+      raise "Not found" unless self.uuid
     end
 
     class << self
@@ -23,6 +24,10 @@ module Cloudbox
             raise $!
           end
         end
+      end
+
+      def find(uuid)
+        Cloudbox::Manager.vms.detect {|vm| vm.uuid == uuid || vm.name == uuid }
       end
 
       def from_list(list)
@@ -58,14 +63,15 @@ module Cloudbox
     end
 
     def running?
-      Cloudbox::Manager.running_vms.include?(self)
+      self.vmstate == 'running'
     end
 
     def method_missing(method, *args)
       if vm_hash[method.to_s]
         return vm_hash[method.to_s]
       else
-        super
+        # Pass on to the superclass unless the user is calling identifying fields
+        super unless ["name", "uuid"].include?(method)
       end
     end
 
@@ -106,6 +112,8 @@ module Cloudbox
         @vm_hash[key.downcase] = value
       end
       @vm_hash
+    rescue # VM probably isn't ready yet
+      {}
     end
 
   end

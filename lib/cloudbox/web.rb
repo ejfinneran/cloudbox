@@ -84,26 +84,33 @@ module Cloudbox
       end
     end
 
+    # Fetch the status of the VM with name == :id.
+    # We first match sure that we can find either a VM or a thread matching the given ID. If not, 404.
+    # If that thread exists we interrogate its state and figure out what to tell the user
+    # If it
+
+
+    # Possible states
+    # - Thread exists, VM does not
+    # - Thread exists, VM exists
+    # - Thread exists, VM exists
+    # - Thread does not exists, VM does
+    # - Thread does not exist, VM does not
     get "/vm/:id" do
+      @vm = Cloudbox::VM.find(params[:id])
       thread = Cloudbox::Manager.workers[params[:id]]
-      status = if thread
+      if !(@vm || thread)
+        return [404, {:status => "VM Not Found"}.to_json]
+      elsif thread
         if thread.alive?
-          "Provisioning"
-        else
-          if thread.value.nil?
-            "Something went wrong"
-          else
-            @vm = Cloudbox::VM.new(thread.value)
-            @vm.running? ? "VM Running" : "VM Ready"
-          end
+          return [200, {:status => "Provisioning"}.to_json]
+        elsif thread.value.nil?
+          return [500, {:status => "Something went wrong"}.to_json]
         end
-      else
-        @vm = Cloudbox::VM.new(params[:id])
-        @vm.running? ? "VM Running" : "VM Ready"
       end
       Jbuilder.encode do |json|
-        json.status status
-        json.vm @vm, :uuid, :name, :ostype, :memory, :ip_address, :macaddress1, :running? if @vm
+        json.status @vm.running? ? "VM Running" : "VM Ready"
+        json.vm @vm, :uuid, :name, :ostype, :memory, :ip_address, :macaddress1, :running?
       end
     end
 
