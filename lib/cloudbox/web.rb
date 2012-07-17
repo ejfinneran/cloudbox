@@ -56,7 +56,7 @@ module Cloudbox
       uuid = params[:uuid]
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
-        vm = Cloudbox::VM.clone_from(uuid, true)
+        vm = Cloudbox::VM.clone_from(uuid, instance_id, true)
         if vm && vm.exists?
           vm.uuid
         else
@@ -72,7 +72,7 @@ module Cloudbox
       uuid = params[:uuid]
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
-        vm = Cloudbox::VM.clone_from(uuid)
+        vm = Cloudbox::VM.clone_from(uuid, instance_id)
         if vm && vm.exists?
           vm.uuid
         else
@@ -98,7 +98,7 @@ module Cloudbox
           end
         end
       else
-        @vm = Cloudbox::VM.new(thread.value)
+        @vm = Cloudbox::VM.new(params[:id])
         @vm.running? ? "VM Running" : "VM Ready"
       end
       Jbuilder.encode do |json|
