@@ -10,6 +10,10 @@ module Cloudbox
       end
     end
 
+    def generate_instance_id
+      Cloudbox::Manager.uuid_generator.generate(:compact)[0..6]
+    end
+
     at_exit do
       Cloudbox::Manager.cleanup
     end
@@ -50,8 +54,8 @@ module Cloudbox
 
     post "/clone_and_boot" do
       uuid = params[:uuid]
-      job_id = Cloudbox::Manager.uuid_generator.generate(:compact)
-      Cloudbox::Manager.workers[job_id] = Thread.new do
+      instance_id = generate_instance_id
+      Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, true)
         if vm && vm.exists?
           vm.uuid
@@ -60,14 +64,14 @@ module Cloudbox
         end
       end
       Jbuilder.encode do |json|
-        json.job_id job_id
+        json.instance_id instance_id
       end
     end
 
     post "/clone" do
       uuid = params[:uuid]
-      job_id = Cloudbox::Manager.uuid_generator.generate(:compact)
-      Cloudbox::Manager.workers[job_id] = Thread.new do
+      instance_id = generate_instance_id
+      Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid)
         if vm && vm.exists?
           vm.uuid
@@ -76,22 +80,26 @@ module Cloudbox
         end
       end
       Jbuilder.encode do |json|
-        json.job_id job_id
+        json.instance_id instance_id
       end
     end
 
-    get "/status/:job_id" do
-      thread = Cloudbox::Manager.workers[params[:job_id]]
-      status = "Job not found" unless thread
-      status ||= if thread.alive?
-        "Running"
-      else
-        if thread.value.nil?
-          "Something went wrong"
+    get "/vm/:id" do
+      thread = Cloudbox::Manager.workers[params[:id]]
+      status = if thread
+        if thread.alive?
+          "Provisioning"
         else
-          @vm = Cloudbox::VM.new(thread.value)
-          "VM Ready"
+          if thread.value.nil?
+            "Something went wrong"
+          else
+            @vm = Cloudbox::VM.new(thread.value)
+            @vm.running? ? "VM Running" : "VM Ready"
+          end
         end
+      else
+        @vm = Cloudbox::VM.new(thread.value)
+        @vm.running? ? "VM Running" : "VM Ready"
       end
       Jbuilder.encode do |json|
         json.status status

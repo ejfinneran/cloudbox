@@ -81,7 +81,7 @@ describe Cloudbox::VM do
     return_value2 = return_value1 + [Cloudbox::VM.new("newuid1")]
     Cloudbox::Manager.stub(:vms).exactly(2).times.
       and_return(return_value1, return_value2)
-    vm = Cloudbox::VM.clone_from("uuid1")
+    vm = Cloudbox::VM.clone_from("uuid1", "new_name")
     vm.class.should eq(Cloudbox::VM)
     vm.uuid.should eq("newuid1")
   end

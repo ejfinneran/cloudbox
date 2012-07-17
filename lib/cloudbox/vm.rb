@@ -7,10 +7,10 @@ module Cloudbox
 
     class << self
 
-      def clone_from(uuid, boot = false)
+      def clone_from(uuid, name, boot = false)
         old_vms = Cloudbox::Manager.vms
         begin
-          output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register")
+          output = Cloudbox::Manager.execute("VBoxManage", "clonevm", uuid, "--register", "--name", name)
           new_vm = (Cloudbox::Manager.vms - old_vms).first
           new_vm.start! if boot
           new_vm

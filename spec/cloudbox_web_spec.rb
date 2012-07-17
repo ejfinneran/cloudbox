@@ -56,37 +56,37 @@ describe "Sinatra App" do
     Thread.stub(:new).and_return(Thread.new)
     post "/clone", :uuid => "uuid1-uuid1"
     json = JSON.parse(last_response.body)
-    job_id = json["job_id"]
+    job_id = json["instance_id"]
     job_id.should be
   end
 
-  it "can check the status of a running clone job" do
+  it "can check the status of a provisioning VM" do
     obj = double("worker")
     obj.stub(:alive?).and_return(true)
-    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
-    get "/status/job123"
+    Cloudbox::Manager.stub(:workers).and_return({"instance123" => obj})
+    get "/vm/instance123"
     json = JSON.parse(last_response.body)
-    json["status"].should eq("Running")
+    json["status"].should eq("Provisioning")
     json["uuid"].should eq(nil)
   end
 
-  it "can check the status of a error state clone job" do
+  it "can check the status of an error state VM" do
     obj = double("worker")
     obj.stub(:alive?).and_return(false)
     obj.stub(:value).and_return(nil)
-    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
-    get "/status/job123"
+    Cloudbox::Manager.stub(:workers).and_return({"instance123" => obj})
+    get "/vm/instance123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("Something went wrong")
     json["uuid"].should eq(nil)
   end
 
-  it "can check the status of a finished clone job" do
+  it "can check the status of a provisioned VM" do
     obj = double("worker")
     obj.stub(:alive?).and_return(false)
     obj.stub(:value).and_return("new-uuid1")
-    Cloudbox::Manager.stub(:workers).and_return({"job123" => obj})
-    get "/status/job123"
+    Cloudbox::Manager.stub(:workers).and_return({"instance123" => obj})
+    get "/vm/instance123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("VM Ready")
     json["vm"]["uuid"].should eq("new-uuid1")
