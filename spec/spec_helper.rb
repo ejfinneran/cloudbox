@@ -25,6 +25,13 @@ def app
 end
 
 RSpec.configure do |config|
+  config.before(:all) do
+    class Cloudbox::VM
+      def uuid
+        @uuid
+      end
+    end
+  end
   config.before(:each) do
     Cloudbox::Manager.stub(:vms).and_return(Cloudbox::VM.from_list(mock_vms_list_output))
     Cloudbox::Manager.stub(:running_vms).and_return(Cloudbox::VM.from_list(mock_running_vms_list_output))
@@ -32,11 +39,12 @@ RSpec.configure do |config|
       {"name" => "lucid32",
        "ostype" => "Ubuntu",
        "memory" => 512,
-       "UUID" => "uuid1-uuid1",
-       "macaddress1" => "08002726EC2D"}
+       "uuid" => "uuid1-uuid1",
+       "macaddress1" => "08002726EC2D",
+       "vmstate" => "running"}
     )
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "guestproperty", "get", kind_of(String), "/VirtualBox/GuestInfo/Net/0/V4/IP").any_number_of_times.and_return("Value: 10.0.2.15")
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", kind_of(String), "--register").any_number_of_times.and_return("")
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", kind_of(String), "--register", "--name", kind_of(String)).any_number_of_times.and_return("")
   end
 end
 

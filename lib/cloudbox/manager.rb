@@ -1,3 +1,5 @@
+require 'uuid'
+
 module Cloudbox
   class Manager
     def self.vms
@@ -16,5 +18,26 @@ module Cloudbox
       command.error!
       command.stdout
     end
+
+    def self.workers
+      @@workers ||= {}
+    end
+
+    def self.uuid_generator
+      @@uuid_generator ||= UUID.new
+    end
+
+    def self.cleanup
+      workers = self.workers.values.compact
+      if workers.detect(&:alive?)
+        # The VBoxManage command will also receive the SIGINT and cancel any active clones.
+        # We just need to wait for it to finish
+        puts "Allowing workers to halt and cleanup..."
+        workers.each(&:join)
+        puts "Done!"
+      end
+    end
+
+
   end
 end

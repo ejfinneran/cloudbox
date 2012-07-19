@@ -34,6 +34,7 @@ describe Cloudbox::VM do
 
   it "can receive the VMs IP address if the VM is running" do
     vm = Cloudbox::VM.new("uuid1")
+    vm.stub(:running?).and_return(false)
     vm.ip_address.should eq("")
 
     vm.stub(:running?).and_return(true)
@@ -65,15 +66,10 @@ describe Cloudbox::VM do
   end
 
   it "supports checking if a VM is running" do
-    vms = Cloudbox::Manager.vms
-    running_vms = Cloudbox::Manager.running_vms
-    running_vms.each do |vm|
-      vm.running?.should be true
-    end
-    not_running_vms = (vms - running_vms)
-    not_running_vms.each do |vm|
-      vm.running?.should_not be true
-    end
+    vm = Cloudbox::Manager.vms.first
+    vm.running?.should be true
+    vm.stub(:vm_hash).and_return({"uuid" => "uuid1", "name" => "base", "vmstate"=> "poweroff"})
+    vm.running?.should be false
   end
 
   it "supports cloning from a given UUID" do
@@ -81,7 +77,7 @@ describe Cloudbox::VM do
     return_value2 = return_value1 + [Cloudbox::VM.new("newuid1")]
     Cloudbox::Manager.stub(:vms).exactly(2).times.
       and_return(return_value1, return_value2)
-    vm = Cloudbox::VM.clone_from("uuid1")
+    vm = Cloudbox::VM.clone_from("uuid1", "new_name")
     vm.class.should eq(Cloudbox::VM)
     vm.uuid.should eq("newuid1")
   end
