@@ -15,7 +15,7 @@ describe "Sinatra App" do
 
   it "raises error if you try to start a VM that doesn't exist" do
     Cloudbox::VM.stub(:find).and_return(nil)
-    post "/vm/uuid1-uuid1/start"
+    post "/vms/uuid1-uuid1/start"
     last_response.should_not be_ok
     json = JSON.parse(last_response.body)
     json["error"].should eq("VM does not exist")
@@ -23,7 +23,7 @@ describe "Sinatra App" do
 
   it "can start a VM" do
     Cloudbox::VM.any_instance.should_receive(:start!).and_return(true)
-    post "/vm/uuid1-uuid1/start"
+    post "/vms/uuid1-uuid1/start"
     last_response.should be_ok
     json = JSON.parse(last_response.body)
     json["response"].should eq("VM Started")
@@ -31,7 +31,7 @@ describe "Sinatra App" do
 
   it "can halt a VM" do
     Cloudbox::VM.any_instance.should_receive(:halt!).and_return(true)
-    post "/vm/uuid1-uuid1/halt"
+    post "/vms/uuid1-uuid1/halt"
     last_response.should be_ok
     json = JSON.parse(last_response.body)
     json["response"].should eq("VM Halted")
@@ -39,7 +39,7 @@ describe "Sinatra App" do
 
   it "can delete a VM" do
     Cloudbox::VM.any_instance.should_receive(:destroy!).and_return(true)
-    post "/vm/uuid1-uuid1/destroy", :uuid => "uuid1-uuid1"
+    post "/vms/uuid1-uuid1/destroy", :uuid => "uuid1-uuid1"
     last_response.should be_ok
     json = JSON.parse(last_response.body)
     json["response"].should eq("VM Destroyed")
@@ -50,7 +50,7 @@ describe "Sinatra App" do
     # Since a new thread loses all the Rspec mocks we've set up,
     # I'm stubbing out the thread here
     Thread.stub(:new).and_return(Thread.new)
-    post "/vm/uuid1-uuid1/clone", :uuid => "uuid1-uuid1"
+    post "/vms/uuid1-uuid1/clone", :uuid => "uuid1-uuid1"
     json = JSON.parse(last_response.body)
     job_id = json["instance_id"]
     job_id.should be
@@ -61,7 +61,7 @@ describe "Sinatra App" do
     obj.stub(:alive?).and_return(true)
     Cloudbox::Manager.stub(:workers).and_return({"instance123" => obj})
     Cloudbox::VM.stub(:find).and_return(Cloudbox::VM.new("uuid"))
-    get "/vm/instance123"
+    get "/vms/instance123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("Provisioning")
     json["uuid"].should eq(nil)
@@ -73,7 +73,7 @@ describe "Sinatra App" do
     obj.stub(:value).and_return(nil)
     Cloudbox::Manager.stub(:workers).and_return({"instance123" => obj})
     Cloudbox::VM.stub(:find).and_return(Cloudbox::VM.new("uuid"))
-    get "/vm/instance123"
+    get "/vms/instance123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("Something went wrong")
     json["uuid"].should eq(nil)
@@ -87,7 +87,7 @@ describe "Sinatra App" do
     vm = Cloudbox::VM.new("new-uuid1")
     vm.stub(:running?).and_return(false)
     Cloudbox::VM.stub(:find).and_return(vm)
-    get "/vm/instance123"
+    get "/vms/instance123"
     json = JSON.parse(last_response.body)
     json["status"].should eq("VM Ready")
     json["vm"]["uuid"].should eq("new-uuid1")
