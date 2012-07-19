@@ -25,7 +25,7 @@ In this example, We'll be using an Ubuntu 10.04 image.
                 "ip_address": "",
                 "macaddress1": "0800274153F3",
                 "memory": "384",
-                "name": "luci32",
+                "name": "lucid32",
                 "ostype": "Ubuntu",
                 "running?": false,
                 "uuid": "c880a82c-e02c-4dbd-99e1-3d1d5bc560ae"
@@ -33,14 +33,19 @@ In this example, We'll be using an Ubuntu 10.04 image.
         ]
     }
 #### Clone a VM ####
-    $ curl -d "uuid=c880a82c-e02c-4dbd-99e1-3d1d5bc560ae" http://localhost:9292/clone
+    $ curl -d '' http://localhost:9292/vms/lucid32
     {
-        "job_id": "1c68b8c0b014012fc39a388d120ed38a"
+        "instance_id": "1c68b8"
     }
 
 #### Check cloning status ####
 
-    $ curl http://localhost:9292/status/1c68b8c0b014012fc39a388d120ed38a
+    $ curl http://localhost:9292/vms/1c68b8
+    {
+        "status": "Provisioning"
+    }
+
+    $ curl http://localhost:9292/vms/1c68b8
     {
         "status": "Running"
     }
