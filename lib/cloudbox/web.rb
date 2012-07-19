@@ -55,7 +55,7 @@ module Cloudbox
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, instance_id, true)
-        if vm && vm.exists?
+        if vm
           vm.uuid
         else
           "Clone process was cancelled"
@@ -71,7 +71,7 @@ module Cloudbox
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, instance_id)
-        if vm && vm.exists?
+        if vm
           vm.uuid
         else
           "Clone process was cancelled"

@@ -109,7 +109,7 @@ module Cloudbox
       end
       @vm_hash
     rescue # VM probably isn't ready yet
-      {}
+      @vm_hash = {"uuid" => nil, "name" => nil}
     end
 
   end
