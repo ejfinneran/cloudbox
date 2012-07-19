@@ -40,7 +40,8 @@ RSpec.configure do |config|
        "ostype" => "Ubuntu",
        "memory" => 512,
        "uuid" => "uuid1-uuid1",
-       "macaddress1" => "08002726EC2D"}
+       "macaddress1" => "08002726EC2D",
+       "vmstate" => "running"}
     )
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "guestproperty", "get", kind_of(String), "/VirtualBox/GuestInfo/Net/0/V4/IP").any_number_of_times.and_return("Value: 10.0.2.15")
     Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "clonevm", kind_of(String), "--register", "--name", kind_of(String)).any_number_of_times.and_return("")
