@@ -58,10 +58,6 @@ module Cloudbox
       self.uuid.hash
     end
 
-    def exists?
-      Cloudbox::Manager.vms.include?(self)
-    end
-
     def running?
       self.vmstate == 'running'
     end

@@ -18,14 +18,10 @@ module Cloudbox
       Cloudbox::Manager.cleanup
     end
 
-    before do
-      if params[:uuid]
-        uuid = params[:uuid]
-        @vm = Cloudbox::VM.new(uuid)
-        unless @vm && @vm.exists?
-          halt 404, Jbuilder.encode {|json| json.error "VM does not exist"}
-        end
-      end
+    def find_vm
+      uuid = params[:id]
+      @vm = Cloudbox::VM.find(uuid)
+      halt 404, {:error => "VM does not exist"}.to_json unless @vm
     end
 
     get "/vms" do
@@ -38,22 +34,24 @@ module Cloudbox
       vm_json(vms)
     end
 
-    post "/start" do
+    post "/vm/:id/start" do
+      find_vm
       @vm.start!("gui")
       Jbuilder.encode do |json|
         json.response "VM Started"
       end
     end
 
-    post "/halt" do
+    post "/vm/:id/halt" do
+      find_vm
       @vm.halt!
       Jbuilder.encode do |json|
         json.response "VM Halted"
       end
     end
 
-    post "/clone_and_boot" do
-      uuid = params[:uuid]
+    post "/vm/:id/clone_and_boot" do
+      uuid = params[:id]
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, instance_id, true)
@@ -68,8 +66,8 @@ module Cloudbox
       end
     end
 
-    post "/clone" do
-      uuid = params[:uuid]
+    post "/vm/:id/clone" do
+      uuid = params[:id]
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
         vm = Cloudbox::VM.clone_from(uuid, instance_id)
@@ -87,15 +85,7 @@ module Cloudbox
     # Fetch the status of the VM with name == :id.
     # We first match sure that we can find either a VM or a thread matching the given ID. If not, 404.
     # If that thread exists we interrogate its state and figure out what to tell the user
-    # If it
-
-
-    # Possible states
-    # - Thread exists, VM does not
-    # - Thread exists, VM exists
-    # - Thread exists, VM exists
-    # - Thread does not exists, VM does
-    # - Thread does not exist, VM does not
+    # If it's not alive and doesn't have a value to give us, something went wrong.
     get "/vm/:id" do
       @vm = Cloudbox::VM.find(params[:id])
       thread = Cloudbox::Manager.workers[params[:id]]
@@ -114,7 +104,8 @@ module Cloudbox
       end
     end
 
-    post "/destroy" do
+    post "/vm/:id/destroy" do
+      find_vm
       @vm.destroy!
       Jbuilder.encode do |json|
         json.response "VM Destroyed"
