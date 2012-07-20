@@ -87,6 +87,7 @@ Note that the IP address may take few moments to be populated.  It also requires
 
 * Ability to set a default "clone from" image
 * In order to use CentOS, the base image needs some manual setup.
+* More config options when cloning a VM (Memory etc)
 
 ## Contributing ##
 
