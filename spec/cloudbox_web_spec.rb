@@ -23,6 +23,7 @@ describe "Sinatra App" do
 
   it "can start a VM" do
     Cloudbox::VM.any_instance.should_receive(:start!).and_return(true)
+    Cloudbox::VM.any_instance.should_receive(:running?).and_return(false)
     post "/vms/uuid1-uuid1/start"
     last_response.should be_ok
     json = JSON.parse(last_response.body)
@@ -31,6 +32,7 @@ describe "Sinatra App" do
 
   it "can halt a VM" do
     Cloudbox::VM.any_instance.should_receive(:halt!).and_return(true)
+    Cloudbox::VM.any_instance.should_receive(:running?).and_return(true)
     post "/vms/uuid1-uuid1/halt"
     last_response.should be_ok
     json = JSON.parse(last_response.body)
@@ -39,6 +41,7 @@ describe "Sinatra App" do
 
   it "can delete a VM" do
     Cloudbox::VM.any_instance.should_receive(:destroy!).and_return(true)
+    Cloudbox::VM.any_instance.should_receive(:running?).and_return(false)
     post "/vms/uuid1-uuid1/destroy", :uuid => "uuid1-uuid1"
     last_response.should be_ok
     json = JSON.parse(last_response.body)

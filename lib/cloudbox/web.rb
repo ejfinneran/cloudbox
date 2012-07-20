@@ -36,6 +36,9 @@ module Cloudbox
 
     post "/vms/:id/start" do
       find_vm
+      if @vm.running?
+        halt [405, "VM is already running"]
+      end
       @vm.start!("gui")
       Jbuilder.encode do |json|
         json.response "VM Started"
@@ -44,6 +47,9 @@ module Cloudbox
 
     post "/vms/:id/halt" do
       find_vm
+      unless @vm.running?
+        halt [405, "VM is not running"]
+      end
       @vm.halt!
       Jbuilder.encode do |json|
         json.response "VM Halted"
@@ -106,6 +112,9 @@ module Cloudbox
 
     post "/vms/:id/destroy" do
       find_vm
+      if @vm.running?
+        halt [405, "VM is still running"]
+      end
       @vm.destroy!
       Jbuilder.encode do |json|
         json.response "VM Destroyed"
