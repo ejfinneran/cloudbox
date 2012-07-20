@@ -4,17 +4,18 @@ A stupid simple HTTP API on top of VirtualBox. The design goal for this is an AP
 
 ## Features ##
 
+* No external dependencies aside from VBox
 * Can clone from an existing VirtualBox VM
 * Can start/stop/destroy VM
 
 ## Usage
 
-Make sure [VirtualBox](http://www.virtualbox.org) is installed and create a template image with bridged networking enabled.
+Make sure [VirtualBox](http://www.virtualbox.org) is installed and create a template image with bridged networking enabled and VBox Guest Additions.
 
 In this example, We'll be using an Ubuntu 10.04 image.
 
 #### Start the server ####
-    bundle
+    bundle --without test
     rackup
 
 #### List VMs ####
@@ -33,12 +34,12 @@ In this example, We'll be using an Ubuntu 10.04 image.
         ]
     }
 #### Clone a VM ####
-    $ curl -d '' http://localhost:9292/vms/lucid32
+    $ curl -d '' http://localhost:9292/vms/lucid32/clone
     {
         "instance_id": "1c68b8"
     }
 
-#### Check cloning status ####
+#### Check VM status ####
 
     $ curl http://localhost:9292/vms/1c68b8
     {
@@ -47,48 +48,47 @@ In this example, We'll be using an Ubuntu 10.04 image.
 
     $ curl http://localhost:9292/vms/1c68b8
     {
-        "status": "Running"
-    }
-
-#### Get new VM info ####
-
-Note, that the `ip_address` field may take a little longer to populate than the other fields.
-
-    $ curl http://localhost:9292/status/1c68b8c0b014012fc39a388d120ed38a
-    {
         "status": "VM Ready",
         "vm": {
-            "ip_address": "10.0.1.35",
+            "ip_address": "",
             "macaddress1": "080027E0DDA4",
             "memory": "384",
-            "name": " Clone",
-            "ostype": "RedHat_64",
-            "running?": true,
+            "name": "1c68b8",
+            "ostype": "Ubuntu",
+            "running?": false,
             "uuid": "ecf59846-040b-426a-a10c-c065ee1e76f1"
         }
     }
 
 #### Start the new VM ####
 
-    $ curl -d "uuid=1b4a1d8a-1799-4891-86dc-dd8dc309d8c9" http://localhost:9292/start
+    $ curl -d '' http://localhost:9292/vms/1c68b8/start
     {
         "response": "VM Started"
     }
-## Installation
 
-Add this line to your application's Gemfile:
+Note that the IP address may take few moments to be populated.  It also requires that VirtualBox Guest Additions are installed on the guest.
 
-    gem 'cloudbox'
+    $ curl http://localhost:9292/vms/1c68b8
+    {
+        "status": "VM Running",
+        "vm": {
+            "ip_address": "10.0.1.35",
+            "macaddress1": "080027E0DDA4",
+            "memory": "384",
+            "name": "1c68b8",
+            "ostype": "Ubuntu",
+            "running?": true,
+            "uuid": "ecf59846-040b-426a-a10c-c065ee1e76f1"
+        }
+    }
 
-And then execute:
+## Roadmap/Known Issues ##
 
-    $ bundle
+* Ability to set a default "clone from" image
+* In order to use CentOS, the base image needs some manual setup.
 
-Or install it yourself as:
-
-    $ gem install cloudbox
-
-## Contributing
+## Contributing ##
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
