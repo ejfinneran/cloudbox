@@ -56,7 +56,7 @@ module Cloudbox
       end
     end
 
-    post "/vms/:id/clone_and_boot" do
+    post "/vms/:id/clone_and_start" do
       uuid = params[:id]
       instance_id = generate_instance_id
       Cloudbox::Manager.workers[instance_id] = Thread.new do
