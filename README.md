@@ -14,6 +14,8 @@ Make sure [VirtualBox](http://www.virtualbox.org) is installed and create a temp
 
 In this example, We'll be using an Ubuntu 10.04 image.
 
+Full API documentation at https://github.com/ejfinneran/cloudbox/wiki/API
+
 #### Start the server ####
     bundle --without test
     rackup
