@@ -39,7 +39,7 @@ module Cloudbox
       if @vm.running?
         halt [405, "VM is already running"]
       end
-      @vm.start!("gui")
+      @vm.start!
       Jbuilder.encode do |json|
         json.response "VM Started"
       end

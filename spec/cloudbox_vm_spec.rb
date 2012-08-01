@@ -21,9 +21,9 @@ describe Cloudbox::VM do
   end
 
   it "can start a VM in headless mode" do
-    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "startvm", "uuid1", "--type", "gui").exactly(1).times
+    Cloudbox::Manager.should_receive(:execute).with("VBoxManage", "startvm", "uuid1", "--type", "headless").exactly(1).times
     vm = Cloudbox::VM.new("uuid1")
-    vm.start!("gui")
+    vm.start!
   end
 
   it "can halt a VM" do
