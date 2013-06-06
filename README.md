@@ -2,6 +2,8 @@
 
 A stupid simple HTTP API on top of VirtualBox. The design goal for this is an API simple enough to use via Curl.
 
+[![Build Status](https://travis-ci.org/ejfinneran/cloudbox.png?branch=master)](https://travis-ci.org/ejfinneran/cloudbox)
+
 ## Features ##
 
 * No external dependencies aside from VBox
